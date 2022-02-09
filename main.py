@@ -181,6 +181,10 @@ def main(args, tokenizer):
                 best_dev_f1 = f1
                 logger.info('Model saved after epoch {}'.format(epoch))
                 state = {'net': model.state_dict(), 'optimizer': optimizer.state_dict(), 'epoch': epoch}
+
+                model_dir = '/'.join(args.save_model_path.split('/')[: -1])
+                if not os.path.exists(model_dir):
+                    os.makedirs(model_dir)
                 torch.save(state, args.save_model_path)
 
             # test
