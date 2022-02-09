@@ -578,7 +578,7 @@ if __name__ == '__main__':
 
     # training hyper-parameter
     parser.add_argument('--ifgpu', type=bool, default=True)
-    parser.add_argument('--epoch_num', type=int, default=50)
+    parser.add_argument('--epoch_num', type=int, default=40)
     parser.add_argument('--batch_size', type=int, default=4)
     parser.add_argument('--learning_rate', type=float, default=1e-3)
     parser.add_argument('--tuning_bert_rate', type=float, default=1e-5)
