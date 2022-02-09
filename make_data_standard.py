@@ -10,7 +10,7 @@ from tqdm import tqdm
 
 
 def make_standard(data_path, dataset_type):
-    with open(f"{data_path}/pair/{dataset_type}_pair.pkl", 'rb') as f:
+    with open(f"{data_path}/{dataset_type}_pair.pkl", 'rb') as f:
         triple_data = pickle.load(f)
 
     standard_list = []
@@ -51,7 +51,7 @@ def make_standard(data_path, dataset_type):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--data_path", type=str, default='./data/14lap',
+    parser.add_argument("--data_path", type=str, default='./data/14lap/pair',
                         help="Path to the dataset.")
     parser.add_argument("--a2o", action='store_true',
                         help='Setup mode forward Aspect to Opinions')
