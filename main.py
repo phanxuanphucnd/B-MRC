@@ -162,13 +162,14 @@ def main(args, tokenizer):
                 scheduler.step()
 
                 # train logger
-                logger.info(
-                    'Epoch {}/{}: \t Loss Sum:{}\t forward Loss:{};{}\t backward Loss:{};{}\t Sentiment Loss:{}'.
-                        format(epoch, args.epoch_num,
-                               round(loss_sum.item(), 4), round(f_asp_loss.item(), 4),
-                               round(f_opi_loss.item(), 4), round(b_asp_loss.item(), 4),
-                               round(b_opi_loss.item(), 4), round(sentiment_loss.item(), 4))
-                )
+                if batch_index % 50 == 0:
+                    logger.info(
+                        'Epoch {}/{} <> Batch {}/{}:\t Loss Sum:{}\t forward Loss:{};{}\t backward Loss:{};{}\t Sentiment Loss:{}'.
+                            format(epoch, args.epoch_num, batch_index, batch_num_train,
+                                   round(loss_sum.item(), 4), round(f_asp_loss.item(), 4),
+                                   round(f_opi_loss.item(), 4), round(b_asp_loss.item(), 4),
+                                   round(b_opi_loss.item(), 4), round(sentiment_loss.item(), 4))
+                    )
 
             # validation
             batch_generator_dev = generate_fi_batches(
