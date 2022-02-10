@@ -14,9 +14,11 @@ def tokenize_data(data, mode='train'):
     max_backward_asp_query_length = 0
     max_backward_opi_query_length = 0
     max_sentiment_query_length = 0
+
     max_aspect_num = 0
     max_opinion_num = 0
     tokenized_sample_list = []
+
     header_fmt = 'Tokenize data {:>5s}'
     for sample in tqdm(data, desc=f"{header_fmt.format(mode.upper())}"):
         forward_queries = []
@@ -34,6 +36,7 @@ def tokenize_data(data, mode='train'):
             max_aspect_num = int(len(sample.forward_queries) - 1)
         if int(len(sample.backward_queries) - 1) > max_opinion_num:
             max_opinion_num = int(len(sample.backward_queries) - 1)
+
         for idx in range(len(sample.forward_queries)):
             temp_query = sample.forward_queries[idx]
             temp_text = sample.text
@@ -42,13 +45,16 @@ def tokenize_data(data, mode='train'):
             temp_query_seg = [0] * (len(temp_query) + 2) + [1] * len(temp_text)
             temp_answer[0] = [-1] * (len(temp_query) + 2) + temp_answer[0]
             temp_answer[1] = [-1] * (len(temp_query) + 2) + temp_answer[1]
+
             assert len(temp_answer[0]) == len(temp_answer[1]) == len(temp_query_to) == len(temp_query_seg)
+
             if idx == 0:
                 if len(temp_query_to) > max_forward_asp_query_length:
                     max_forward_asp_query_length = len(temp_query_to)
             else:
                 if len(temp_query_to) > max_forward_opi_query_length:
                     max_forward_opi_query_length = len(temp_query_to)
+
             forward_queries.append(temp_query_to)
             forward_answers.append(temp_answer)
             forward_queries_seg.append(temp_query_seg)
@@ -61,13 +67,16 @@ def tokenize_data(data, mode='train'):
             temp_query_seg = [0] * (len(temp_query) + 2) + [1] * len(temp_text)
             temp_answer[0] = [-1] * (len(temp_query) + 2) + temp_answer[0]
             temp_answer[1] = [-1] * (len(temp_query) + 2) + temp_answer[1]
+
             assert len(temp_answer[0]) == len(temp_answer[1]) == len(temp_query_to) == len(temp_query_seg)
+
             if idx == 0:
                 if len(temp_query_to) > max_backward_opi_query_length:
                     max_backward_opi_query_length = len(temp_query_to)
             else:
                 if len(temp_query_to) > max_backward_asp_query_length:
                     max_backward_asp_query_length = len(temp_query_to)
+
             backward_queries.append(temp_query_to)
             backward_answers.append(temp_answer)
             backward_queries_seg.append(temp_query_seg)
@@ -78,9 +87,12 @@ def tokenize_data(data, mode='train'):
             temp_answer = sample.sentiment_answers[idx]
             temp_query_to = ['[CLS]'] + temp_query + ['[SEP]'] + temp_text
             temp_query_seg = [0] * (len(temp_query) + 2) + [1] * len(temp_text)
+
             assert len(temp_query_to) == len(temp_query_seg)
+
             if len(temp_query_to) > max_sentiment_query_length:
                 max_sentiment_query_length = len(temp_query_to)
+
             sentiment_queries.append(temp_query_to)
             sentiment_answers.append(temp_answer)
             sentiment_queries_seg.append(temp_query_seg)
@@ -90,6 +102,7 @@ def tokenize_data(data, mode='train'):
                                        backward_queries_seg, sentiment_queries_seg)
         # print(temp_sample)
         tokenized_sample_list.append(temp_sample)
+
     max_attributes = {
         'mfor_asp_len': max_forward_asp_query_length,
         'mfor_opi_len': max_forward_opi_query_length,
@@ -329,24 +342,34 @@ def preprocessing(sample_list, max_len, mode='train'):
         _sentiment_answer.append(single_sentiment_answer)
         _sentiment_answer[-1].extend([-1] * (max_len['max_aspect_num'] - _aspect_num[-1]))
 
-    result = {"_forward_asp_query": _forward_asp_query, "_forward_opi_query": _forward_opi_query,
-              "_forward_asp_answer_start": _forward_asp_answer_start,
-              "_forward_asp_answer_end": _forward_asp_answer_end,
-              "_forward_opi_answer_start": _forward_opi_answer_start,
-              "_forward_opi_answer_end": _forward_opi_answer_end,
-              "_forward_asp_query_mask": _forward_asp_query_mask, "_forward_opi_query_mask": _forward_opi_query_mask,
-              "_forward_asp_query_seg": _forward_asp_query_seg, "_forward_opi_query_seg": _forward_opi_query_seg,
-              "_backward_asp_query": _backward_asp_query, "_backward_opi_query": _backward_opi_query,
-              "_backward_asp_answer_start": _backward_asp_answer_start,
-              "_backward_asp_answer_end": _backward_asp_answer_end,
-              "_backward_opi_answer_start": _backward_opi_answer_start,
-              "_backward_opi_answer_end": _backward_opi_answer_end,
-              "_backward_asp_query_mask": _backward_asp_query_mask,
-              "_backward_opi_query_mask": _backward_opi_query_mask,
-              "_backward_asp_query_seg": _backward_asp_query_seg, "_backward_opi_query_seg": _backward_opi_query_seg,
-              "_sentiment_query": _sentiment_query, "_sentiment_answer": _sentiment_answer,
-              "_sentiment_query_mask": _sentiment_query_mask,
-              "_sentiment_query_seg": _sentiment_query_seg, "_aspect_num": _aspect_num, "_opinion_num": _opinion_num}
+    result = {
+        "_forward_asp_query": _forward_asp_query,
+        "_forward_opi_query": _forward_opi_query,
+        "_forward_asp_answer_start": _forward_asp_answer_start,
+        "_forward_asp_answer_end": _forward_asp_answer_end,
+        "_forward_opi_answer_start": _forward_opi_answer_start,
+        "_forward_opi_answer_end": _forward_opi_answer_end,
+        "_forward_asp_query_mask": _forward_asp_query_mask,
+        "_forward_opi_query_mask": _forward_opi_query_mask,
+        "_forward_asp_query_seg": _forward_asp_query_seg,
+        "_forward_opi_query_seg": _forward_opi_query_seg,
+        "_backward_asp_query": _backward_asp_query,
+        "_backward_opi_query": _backward_opi_query,
+        "_backward_asp_answer_start": _backward_asp_answer_start,
+        "_backward_asp_answer_end": _backward_asp_answer_end,
+        "_backward_opi_answer_start": _backward_opi_answer_start,
+        "_backward_opi_answer_end": _backward_opi_answer_end,
+        "_backward_asp_query_mask": _backward_asp_query_mask,
+        "_backward_opi_query_mask": _backward_opi_query_mask,
+        "_backward_asp_query_seg": _backward_asp_query_seg,
+        "_backward_opi_query_seg": _backward_opi_query_seg,
+        "_sentiment_query": _sentiment_query,
+        "_sentiment_answer": _sentiment_answer,
+        "_sentiment_query_mask": _sentiment_query_mask,
+        "_sentiment_query_seg": _sentiment_query_seg,
+        "_aspect_num": _aspect_num,
+        "_opinion_num": _opinion_num
+    }
 
     return OriginalDataset(result)
 

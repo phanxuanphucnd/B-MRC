@@ -17,11 +17,11 @@ from transformers import AdamW, get_linear_schedule_with_warmup, BertTokenizer
 #TODO: Init logger
 logger = utils.get_logger('./logs.txt')
 
-seed = 123
-np.random.seed(seed)
-torch.manual_seed(seed)
-torch.cuda.manual_seed(seed)
-torch.cuda.manual_seed_all(seed)
+# seed = 123
+# np.random.seed(seed)
+# torch.manual_seed(seed)
+# torch.cuda.manual_seed(seed)
+# torch.cuda.manual_seed_all(seed)
 
 
 def main(args, tokenizer):
@@ -51,7 +51,7 @@ def main(args, tokenizer):
         test_dataset = BMRCDataset(train_data, dev_data, test_data, 'test')
         # load checkpoint
         logger.info('Loading checkpoint...')
-        checkpoint = torch.load(args.checkpoint_path)
+        checkpoint = torch.load(args.save_model_path)
         model.load_state_dict(checkpoint['net'])
         model.eval()
 
@@ -59,7 +59,7 @@ def main(args, tokenizer):
             dataset=test_dataset, batch_size=1, shuffle=False, ifgpu=args.ifgpu)
         # eval
         logger.info('Evaluating...')
-        f1 = test(model, tokenize, batch_generator_test, test_standard, args.beta, logger)
+        f1 = test(model, tokenizer, batch_generator_test, test_standard, args.beta, logger)
 
     elif args.mode == 'train':
         train_dataset = BMRCDataset(train_data, dev_data, test_data, 'train')
