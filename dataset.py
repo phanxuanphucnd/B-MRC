@@ -71,35 +71,35 @@ class TokenizedSample(object):
 
 class OriginalDataset(Dataset):
     def __init__(self, pre_data):
-        self._forward_asp_query = pre_data['_forward_asp_query']
-        self._forward_opi_query = pre_data['_forward_opi_query']  # [max_aspect_num, max_opinion_query_length]
-        self._forward_asp_answer_start = pre_data['_forward_asp_answer_start']
-        self._forward_asp_answer_end = pre_data['_forward_asp_answer_end']
-        self._forward_opi_answer_start = pre_data['_forward_opi_answer_start']
-        self._forward_opi_answer_end = pre_data['_forward_opi_answer_end']
-        self._forward_asp_query_mask = pre_data['_forward_asp_query_mask']  # [max_aspect_num, max_opinion_query_length]
-        self._forward_opi_query_mask = pre_data['_forward_opi_query_mask']  # [max_aspect_num, max_opinion_query_length]
-        self._forward_asp_query_seg = pre_data['_forward_asp_query_seg']  # [max_aspect_num, max_opinion_query_length]
-        self._forward_opi_query_seg = pre_data['_forward_opi_query_seg']  # [max_aspect_num, max_opinion_query_length]
+        self._forward_asp_query = pre_data.get('_forward_asp_query', None)
+        self._forward_opi_query = pre_data.get('_forward_opi_query', None)  # [max_aspect_num, max_opinion_query_length]
+        self._forward_asp_answer_start = pre_data.get('_forward_asp_answer_start', None)
+        self._forward_asp_answer_end = pre_data.get('_forward_asp_answer_end', None)
+        self._forward_opi_answer_start = pre_data.get('_forward_opi_answer_start', None)
+        self._forward_opi_answer_end = pre_data.get('_forward_opi_answer_end', None)
+        self._forward_asp_query_mask = pre_data.get('_forward_asp_query_mask', None)  # [max_aspect_num, max_opinion_query_length]
+        self._forward_opi_query_mask = pre_data.get('_forward_opi_query_mask', None)  # [max_aspect_num, max_opinion_query_length]
+        self._forward_asp_query_seg = pre_data.get('_forward_asp_query_seg', None)  # [max_aspect_num, max_opinion_query_length]
+        self._forward_opi_query_seg = pre_data.get('_forward_opi_query_seg', None)  # [max_aspect_num, max_opinion_query_length]
 
-        self._backward_asp_query = pre_data['_backward_asp_query']
-        self._backward_opi_query = pre_data['_backward_opi_query']  # [max_aspect_num, max_opinion_query_length]
-        self._backward_asp_answer_start = pre_data['_backward_asp_answer_start']
-        self._backward_asp_answer_end = pre_data['_backward_asp_answer_end']
-        self._backward_opi_answer_start = pre_data['_backward_opi_answer_start']
-        self._backward_opi_answer_end = pre_data['_backward_opi_answer_end']
-        self._backward_asp_query_mask = pre_data['_backward_asp_query_mask']  # [max_aspect_num, max_opinion_query_length]
-        self._backward_opi_query_mask = pre_data['_backward_opi_query_mask']  # [max_aspect_num, max_opinion_query_length]
-        self._backward_asp_query_seg = pre_data['_backward_asp_query_seg']  # [max_aspect_num, max_opinion_query_length]
-        self._backward_opi_query_seg = pre_data['_backward_opi_query_seg']  # [max_aspect_num, max_opinion_query_length]
+        self._backward_asp_query = pre_data.get('_backward_asp_query', None)
+        self._backward_opi_query = pre_data.get('_backward_opi_query', None)  # [max_aspect_num, max_opinion_query_length]
+        self._backward_asp_answer_start = pre_data.get('_backward_asp_answer_start', None)
+        self._backward_asp_answer_end = pre_data.get('_backward_asp_answer_end', None)
+        self._backward_opi_answer_start = pre_data.get('_backward_opi_answer_start', None)
+        self._backward_opi_answer_end = pre_data.get('_backward_opi_answer_end', None)
+        self._backward_asp_query_mask = pre_data.get('_backward_asp_query_mask', None)  # [max_aspect_num, max_opinion_query_length]
+        self._backward_opi_query_mask = pre_data.get('_backward_opi_query_mask', None)  # [max_aspect_num, max_opinion_query_length]
+        self._backward_asp_query_seg = pre_data.get('_backward_asp_query_seg', None)  # [max_aspect_num, max_opinion_query_length]
+        self._backward_opi_query_seg = pre_data.get('_backward_opi_query_seg', None)  # [max_aspect_num, max_opinion_query_length]
 
-        self._sentiment_query = pre_data['_sentiment_query']  # [max_aspect_num, max_sentiment_query_length]
-        self._sentiment_answer = pre_data['_sentiment_answer']
-        self._sentiment_query_mask = pre_data['_sentiment_query_mask']  # [max_aspect_num, max_sentiment_query_length]
-        self._sentiment_query_seg = pre_data['_sentiment_query_seg']  # [max_aspect_num, max_sentiment_query_length]
+        self._sentiment_query = pre_data.get('_sentiment_query', None)  # [max_aspect_num, max_sentiment_query_length]
+        self._sentiment_answer = pre_data.get('_sentiment_answer', None)
+        self._sentiment_query_mask = pre_data.get('_sentiment_query_mask', None)  # [max_aspect_num, max_sentiment_query_length]
+        self._sentiment_query_seg = pre_data.get('_sentiment_query_seg', None)  # [max_aspect_num, max_sentiment_query_length]
 
-        self._aspect_num = pre_data['_aspect_num']
-        self._opinion_num = pre_data['_opinion_num']
+        self._aspect_num = pre_data.get('_aspect_num', None)
+        self._opinion_num = pre_data.get('_opinion_num', None)
 
     def __str__(self):
         str = '----------------------------------------\n'
@@ -137,10 +137,11 @@ class OriginalDataset(Dataset):
 
 
 class BMRCDataset(Dataset):
-    def __init__(self, train, dev, test, set):
+    def __init__(self, train=None, dev=None, test=None, set='train', version='bidirectional'):
         self._train_set = train
         self._dev_set = dev
         self._test_set = test
+        self.version = version
         if set == 'train':
             self._dataset = self._train_set
         elif set == 'dev':
@@ -182,6 +183,7 @@ class BMRCDataset(Dataset):
         return len(self._forward_asp_query)
 
     def __getitem__(self, item):
+        #TODO: Forward
         forward_asp_query = self._forward_asp_query[item]
         forward_opi_query = self._forward_opi_query[item]
         forward_asp_answer_start = self._forward_asp_answer_start[item]
@@ -192,20 +194,37 @@ class BMRCDataset(Dataset):
         forward_opi_query_mask = self._forward_opi_query_mask[item]
         forward_asp_query_seg = self._forward_asp_query_seg[item]
         forward_opi_query_seg = self._forward_opi_query_seg[item]
-        backward_asp_query = self._backward_asp_query[item]
-        backward_opi_query = self._backward_opi_query[item]
-        backward_asp_answer_start = self._backward_asp_answer_start[item]
-        backward_asp_answer_end = self._backward_asp_answer_end[item]
-        backward_opi_answer_start = self._backward_opi_answer_start[item]
-        backward_opi_answer_end = self._backward_opi_answer_end[item]
-        backward_asp_query_mask = self._backward_asp_query_mask[item]
-        backward_opi_query_mask = self._backward_opi_query_mask[item]
-        backward_asp_query_seg = self._backward_asp_query_seg[item]
-        backward_opi_query_seg = self._backward_opi_query_seg[item]
+
+        # TODO: Backward
+        if self.version.lower() in ['bi','bidirectional']:
+            backward_asp_query = self._backward_asp_query[item]
+            backward_opi_query = self._backward_opi_query[item]
+            backward_asp_answer_start = self._backward_asp_answer_start[item]
+            backward_asp_answer_end = self._backward_asp_answer_end[item]
+            backward_opi_answer_start = self._backward_opi_answer_start[item]
+            backward_opi_answer_end = self._backward_opi_answer_end[item]
+            backward_asp_query_mask = self._backward_asp_query_mask[item]
+            backward_opi_query_mask = self._backward_opi_query_mask[item]
+            backward_asp_query_seg = self._backward_asp_query_seg[item]
+            backward_opi_query_seg = self._backward_opi_query_seg[item]
+        else:
+            backward_asp_query = []
+            backward_opi_query = []
+            backward_asp_answer_start = []
+            backward_asp_answer_end = []
+            backward_opi_answer_start = []
+            backward_opi_answer_end = []
+            backward_asp_query_mask = []
+            backward_opi_query_mask = []
+            backward_asp_query_seg = []
+            backward_opi_query_seg = []
+
+        #TODO: Sentiment
         sentiment_query = self._sentiment_query[item]
         sentiment_answer = self._sentiment_answer[item]
         sentiment_query_mask = self._sentiment_query_mask[item]
         sentiment_query_seg = self._sentiment_query_seg[item]
+
         aspect_num = self._aspect_num[item]
         opinion_num = self._opinion_num[item]
 

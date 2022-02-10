@@ -8,7 +8,7 @@ from transformers import  BertTokenizer
 from dataset import DualSample, TokenizedSample, OriginalDataset
 
 
-def tokenize_data(data, mode='train'):
+def tokenize_data(data, version='bidirectional', mode='train'):
     max_forward_asp_query_length = 0
     max_forward_opi_query_length = 0
     max_backward_asp_query_length = 0
@@ -34,8 +34,6 @@ def tokenize_data(data, mode='train'):
 
         if int(len(sample.forward_queries) - 1) > max_aspect_num:
             max_aspect_num = int(len(sample.forward_queries) - 1)
-        if int(len(sample.backward_queries) - 1) > max_opinion_num:
-            max_opinion_num = int(len(sample.backward_queries) - 1)
 
         for idx in range(len(sample.forward_queries)):
             temp_query = sample.forward_queries[idx]
@@ -59,27 +57,31 @@ def tokenize_data(data, mode='train'):
             forward_answers.append(temp_answer)
             forward_queries_seg.append(temp_query_seg)
 
-        for idx in range(len(sample.backward_queries)):
-            temp_query = sample.backward_queries[idx]
-            temp_text = sample.text
-            temp_answer = sample.backward_answers[idx]
-            temp_query_to = ['[CLS]'] + temp_query + ['[SEP]'] + temp_text
-            temp_query_seg = [0] * (len(temp_query) + 2) + [1] * len(temp_text)
-            temp_answer[0] = [-1] * (len(temp_query) + 2) + temp_answer[0]
-            temp_answer[1] = [-1] * (len(temp_query) + 2) + temp_answer[1]
+        if version.lower() in ['bi', 'bidirectional']:
+            if int(len(sample.backward_queries) - 1) > max_opinion_num:
+                max_opinion_num = int(len(sample.backward_queries) - 1)
 
-            assert len(temp_answer[0]) == len(temp_answer[1]) == len(temp_query_to) == len(temp_query_seg)
+            for idx in range(len(sample.backward_queries)):
+                temp_query = sample.backward_queries[idx]
+                temp_text = sample.text
+                temp_answer = sample.backward_answers[idx]
+                temp_query_to = ['[CLS]'] + temp_query + ['[SEP]'] + temp_text
+                temp_query_seg = [0] * (len(temp_query) + 2) + [1] * len(temp_text)
+                temp_answer[0] = [-1] * (len(temp_query) + 2) + temp_answer[0]
+                temp_answer[1] = [-1] * (len(temp_query) + 2) + temp_answer[1]
 
-            if idx == 0:
-                if len(temp_query_to) > max_backward_opi_query_length:
-                    max_backward_opi_query_length = len(temp_query_to)
-            else:
-                if len(temp_query_to) > max_backward_asp_query_length:
-                    max_backward_asp_query_length = len(temp_query_to)
+                assert len(temp_answer[0]) == len(temp_answer[1]) == len(temp_query_to) == len(temp_query_seg)
 
-            backward_queries.append(temp_query_to)
-            backward_answers.append(temp_answer)
-            backward_queries_seg.append(temp_query_seg)
+                if idx == 0:
+                    if len(temp_query_to) > max_backward_opi_query_length:
+                        max_backward_opi_query_length = len(temp_query_to)
+                else:
+                    if len(temp_query_to) > max_backward_asp_query_length:
+                        max_backward_asp_query_length = len(temp_query_to)
+
+                backward_queries.append(temp_query_to)
+                backward_answers.append(temp_answer)
+                backward_queries_seg.append(temp_query_seg)
 
         for idx in range(len(sample.sentiment_queries)):
             temp_query = sample.sentiment_queries[idx]
@@ -115,7 +117,7 @@ def tokenize_data(data, mode='train'):
     return tokenized_sample_list, max_attributes
 
 
-def preprocessing(sample_list, max_len, mode='train'):
+def preprocessing(sample_list, max_len, version='bidirectional', mode='train'):
     _tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
     _forward_asp_query = []
     _forward_opi_query = []
@@ -235,77 +237,78 @@ def preprocessing(sample_list, max_len, mode='train'):
         _forward_opi_answer_end[-1].extend(
             [[-1 for i in range(max_len['mfor_opi_len'])]] * (max_len['max_aspect_num'] - _aspect_num[-1]))
 
-        # Backward
-        # opinion
-        # query
-        assert len(b_query_list[0]) == len(b_answer_list[0][0]) == len(b_answer_list[0][1])
-        b_opi_pad_num = max_len['mback_opi_len'] - len(b_query_list[0])
-
-        _backward_opi_query.append(_tokenizer.convert_tokens_to_ids(
-            [word.lower() if word not in ['[CLS]', '[SEP]'] else word for word in b_query_list[0]]))
-        _backward_opi_query[-1].extend([0] * b_opi_pad_num)
-
-        # mask
-        _backward_opi_query_mask.append([1 for i in range(len(b_query_list[0]))])
-        _backward_opi_query_mask[-1].extend([0] * b_opi_pad_num)
-
-        # answer
-        _backward_opi_answer_start.append(b_answer_list[0][0])
-        _backward_opi_answer_start[-1].extend([-1] * b_opi_pad_num)
-        _backward_opi_answer_end.append(b_answer_list[0][1])
-        _backward_opi_answer_end[-1].extend([-1] * b_opi_pad_num)
-
-        # seg
-        _backward_opi_query_seg.append(b_query_seg_list[0])
-        _backward_opi_query_seg[-1].extend([1] * b_opi_pad_num)
-
-        # Aspect
-        single_aspect_query = []
-        single_aspect_query_mask = []
-        single_aspect_query_seg = []
-        single_aspect_answer_start = []
-        single_aspect_answer_end = []
-        for i in range(1, len(b_query_list)):
-            assert len(b_query_list[i]) == len(b_answer_list[i][0]) == len(b_answer_list[i][1])
-            pad_num = max_len['mback_asp_len'] - len(b_query_list[i])
+        if version.lower() in ['bi', 'bidirectional']:
+            # Backward
+            # opinion
             # query
-            single_aspect_query.append(_tokenizer.convert_tokens_to_ids(
-                [word.lower() if word not in ['[CLS]', '[SEP]'] else word for word in b_query_list[i]]))
-            single_aspect_query[-1].extend([0] * pad_num)
+            assert len(b_query_list[0]) == len(b_answer_list[0][0]) == len(b_answer_list[0][1])
+            b_opi_pad_num = max_len['mback_opi_len'] - len(b_query_list[0])
 
-            # query_mask
-            single_aspect_query_mask.append([1 for i in range(len(b_query_list[i]))])
-            single_aspect_query_mask[-1].extend([0] * pad_num)
+            _backward_opi_query.append(_tokenizer.convert_tokens_to_ids(
+                [word.lower() if word not in ['[CLS]', '[SEP]'] else word for word in b_query_list[0]]))
+            _backward_opi_query[-1].extend([0] * b_opi_pad_num)
 
-            # query_seg
-            single_aspect_query_seg.append(b_query_seg_list[i])
-            single_aspect_query_seg[-1].extend([1] * pad_num)
+            # mask
+            _backward_opi_query_mask.append([1 for i in range(len(b_query_list[0]))])
+            _backward_opi_query_mask[-1].extend([0] * b_opi_pad_num)
 
             # answer
-            single_aspect_answer_start.append(b_answer_list[i][0])
-            single_aspect_answer_start[-1].extend([-1] * pad_num)
-            single_aspect_answer_end.append(b_answer_list[i][1])
-            single_aspect_answer_end[-1].extend([-1] * pad_num)
+            _backward_opi_answer_start.append(b_answer_list[0][0])
+            _backward_opi_answer_start[-1].extend([-1] * b_opi_pad_num)
+            _backward_opi_answer_end.append(b_answer_list[0][1])
+            _backward_opi_answer_end[-1].extend([-1] * b_opi_pad_num)
 
-        # PAD: max_opinion_num
-        _backward_asp_query.append(single_aspect_query)
-        _backward_asp_query[-1].extend(
-            [[0 for i in range(max_len['mback_asp_len'])]] * (max_len['max_opinion_num'] - _opinion_num[-1]))
+            # seg
+            _backward_opi_query_seg.append(b_query_seg_list[0])
+            _backward_opi_query_seg[-1].extend([1] * b_opi_pad_num)
 
-        _backward_asp_query_mask.append(single_aspect_query_mask)
-        _backward_asp_query_mask[-1].extend(
-            [[0 for i in range(max_len['mback_asp_len'])]] * (max_len['max_opinion_num'] - _opinion_num[-1]))
+            # Aspect
+            single_aspect_query = []
+            single_aspect_query_mask = []
+            single_aspect_query_seg = []
+            single_aspect_answer_start = []
+            single_aspect_answer_end = []
+            for i in range(1, len(b_query_list)):
+                assert len(b_query_list[i]) == len(b_answer_list[i][0]) == len(b_answer_list[i][1])
+                pad_num = max_len['mback_asp_len'] - len(b_query_list[i])
+                # query
+                single_aspect_query.append(_tokenizer.convert_tokens_to_ids(
+                    [word.lower() if word not in ['[CLS]', '[SEP]'] else word for word in b_query_list[i]]))
+                single_aspect_query[-1].extend([0] * pad_num)
 
-        _backward_asp_query_seg.append(single_aspect_query_seg)
-        _backward_asp_query_seg[-1].extend(
-            [[0 for i in range(max_len['mback_asp_len'])]] * (max_len['max_opinion_num'] - _opinion_num[-1]))
+                # query_mask
+                single_aspect_query_mask.append([1 for i in range(len(b_query_list[i]))])
+                single_aspect_query_mask[-1].extend([0] * pad_num)
 
-        _backward_asp_answer_start.append(single_aspect_answer_start)
-        _backward_asp_answer_start[-1].extend(
-            [[-1 for i in range(max_len['mback_asp_len'])]] * (max_len['max_opinion_num'] - _opinion_num[-1]))
-        _backward_asp_answer_end.append(single_aspect_answer_end)
-        _backward_asp_answer_end[-1].extend(
-            [[-1 for i in range(max_len['mback_asp_len'])]] * (max_len['max_opinion_num'] - _opinion_num[-1]))
+                # query_seg
+                single_aspect_query_seg.append(b_query_seg_list[i])
+                single_aspect_query_seg[-1].extend([1] * pad_num)
+
+                # answer
+                single_aspect_answer_start.append(b_answer_list[i][0])
+                single_aspect_answer_start[-1].extend([-1] * pad_num)
+                single_aspect_answer_end.append(b_answer_list[i][1])
+                single_aspect_answer_end[-1].extend([-1] * pad_num)
+
+            # PAD: max_opinion_num
+            _backward_asp_query.append(single_aspect_query)
+            _backward_asp_query[-1].extend(
+                [[0 for i in range(max_len['mback_asp_len'])]] * (max_len['max_opinion_num'] - _opinion_num[-1]))
+
+            _backward_asp_query_mask.append(single_aspect_query_mask)
+            _backward_asp_query_mask[-1].extend(
+                [[0 for i in range(max_len['mback_asp_len'])]] * (max_len['max_opinion_num'] - _opinion_num[-1]))
+
+            _backward_asp_query_seg.append(single_aspect_query_seg)
+            _backward_asp_query_seg[-1].extend(
+                [[0 for i in range(max_len['mback_asp_len'])]] * (max_len['max_opinion_num'] - _opinion_num[-1]))
+
+            _backward_asp_answer_start.append(single_aspect_answer_start)
+            _backward_asp_answer_start[-1].extend(
+                [[-1 for i in range(max_len['mback_asp_len'])]] * (max_len['max_opinion_num'] - _opinion_num[-1]))
+            _backward_asp_answer_end.append(single_aspect_answer_end)
+            _backward_asp_answer_end[-1].extend(
+                [[-1 for i in range(max_len['mback_asp_len'])]] * (max_len['max_opinion_num'] - _opinion_num[-1]))
 
         # Sentiment
         single_sentiment_query = []
@@ -381,10 +384,9 @@ if __name__ == '__main__':
                         help='Path to the processed data from `data_process.py`')
     parser.add_argument('--output_path', type=str, default='./data/14lap/preprocess',
                         help='Path to the saved data.')
-    parser.add_argument("--a2o", action='store_true',
-                        help='Setup mode forward Aspect to Opinions')
-    parser.add_argument("--o2a", action='store_true',
-                        help='Setup mode backward Opinion to Aspects')
+    parser.add_argument("--version", type=str, default='bidirectional',
+                        choices=['uni', 'bi', 'unidirectional', 'bidirectional'],
+                        help="`model_type` options in ['unidirectional', 'bidirectional'].")
 
     args = parser.parse_args()
 
@@ -396,16 +398,17 @@ if __name__ == '__main__':
     dev_data = torch.load(dev_data_path)
     test_data = torch.load(test_data_path)
 
-    train_tokenized, train_max_len = tokenize_data(train_data, mode='train')
-    dev_tokenized, dev_max_len = tokenize_data(dev_data, mode='dev')
-    test_tokenized, test_max_len = tokenize_data(test_data, mode='test')
+    train_tokenized, train_max_len = tokenize_data(train_data, version=args.version, mode='train')
+    dev_tokenized, dev_max_len = tokenize_data(dev_data, version=args.version, mode='dev')
+    test_tokenized, test_max_len = tokenize_data(test_data, version=args.version, mode='test')
 
-    train_preprocess = preprocessing(train_tokenized, train_max_len, mode='train')
-    dev_preprocess = preprocessing(dev_tokenized, dev_max_len, mode='dev')
-    test_preprocess = preprocessing(test_tokenized, test_max_len, mode='test')
+    train_preprocess = preprocessing(train_tokenized, train_max_len, version=args.version, mode='train')
+    dev_preprocess = preprocessing(dev_tokenized, dev_max_len, version=args.version, mode='dev')
+    test_preprocess = preprocessing(test_tokenized, test_max_len, version=args.version, mode='test')
 
     if not os.path.exists(args.output_path):
         os.makedirs(args.output_path)
+
     output_path = f"{args.output_path}/data.pt"
     print(f"Saved data : `{output_path}`.")
     torch.save({

@@ -35,7 +35,7 @@ def valid_data(triplet, aspect, opinion):
         assert opinion[t] != ['O']
 
 
-def fusion_dual_triplet(triplet, forward=True, backward=False):
+def fusion_dual_triplet(triplet, backward=False):
     triplet_aspect = []
     triplet_opinion = []
     triplet_sentiment = []
@@ -43,15 +43,14 @@ def fusion_dual_triplet(triplet, forward=True, backward=False):
     dual_aspect = []
 
     for t in triplet:
-        if forward:
-            if t[0] not in triplet_aspect:
-                triplet_aspect.append(t[0])
-                triplet_opinion.append([t[1]])
-                triplet_sentiment.append(t[2])
-            else:
-                idx = triplet_aspect.index(t[0])
-                triplet_opinion[idx].append(t[1])
-                assert triplet_sentiment[idx] == t[2]
+        if t[0] not in triplet_aspect:
+            triplet_aspect.append(t[0])
+            triplet_opinion.append([t[1]])
+            triplet_sentiment.append(t[2])
+        else:
+            idx = triplet_aspect.index(t[0])
+            triplet_opinion[idx].append(t[1])
+            assert triplet_sentiment[idx] == t[2]
 
         if backward:
             if t[1] not in dual_opinion:
@@ -69,22 +68,15 @@ if __name__ == '__main__':
 
     parser.add_argument("--data_path", type=str, default='./data/14lap',
                         help="Path to the dataset.")
-    parser.add_argument("--model_type", type=str, default='unidirectional',
+    parser.add_argument("--version", type=str, default='bidirectional',
+                        choices=['uni', 'bi', 'unidirectional', 'bidirectional'],
                         help="`model_type` options in ['unidirectional', 'bidirectional'].")
-    parser.add_argument("--a2o", action='store_true',
-                        help='Setup mode forward Aspect to Opinions')
-    parser.add_argument("--o2a", action='store_true',
-                        help='Setup mode backward Opinion to Aspects')
     parser.add_argument('--output_path', type=str, default='./data/14lap/preprocess',
                         help='Path to the saved data.')
 
     args = parser.parse_args()
 
     DATASET_TYPE_LIST = ['train', 'dev', 'test']
-
-    if not args.a2o and not args.o2a:
-        args.a2o = True
-        args.o2a = True
 
     for dataset_type in DATASET_TYPE_LIST:
         #TODO: Read triple
@@ -107,8 +99,7 @@ if __name__ == '__main__':
             valid_data(triplet, aspect_list[i], opinion_list[i])
             triplet_aspect, triplet_opinion, triplet_sentiment, dual_opinion, dual_aspect = fusion_dual_triplet(
                 triplet,
-                forward=args.a2o,
-                backward=args.o2a
+                backward=args.version.lower() in ['bi', 'bidirectional']
             )
 
             forward_query_list = []
@@ -118,40 +109,39 @@ if __name__ == '__main__':
             sentiment_query_list = []
             sentiment_answer_list = []
 
-            if args.a2o:
-                forward_query_list.append("What aspects ?".split())
+            forward_query_list.append("What aspects ?".split())
+            start = [0]*len(text)
+            end = [0]*len(text)
+            for ta in triplet_aspect:
+                start[ta[0]] = 1
+                end[ta[-1]] = 1
+            forward_answer_list.append([start, end])
+
+            for idx in range(len(triplet_aspect)):
+                ta = triplet_aspect[idx]
+                #TODO: Opinion query
+                query = f"What opinion given the aspect {' '.join(text[ta[0]: ta[-1] + 1])} ?".split()
+                forward_query_list.append(query)
                 start = [0]*len(text)
                 end = [0]*len(text)
-                for ta in triplet_aspect:
-                    start[ta[0]] = 1
-                    end[ta[-1]] = 1
+                for to in triplet_opinion[idx]:
+                    start[to[0]] = 1
+                    end[to[-1]] = 1
                 forward_answer_list.append([start, end])
+                #TODO: Sentiment query
+                temp_opinion = []
+                for idy in range(len(triplet_opinion[idx]) - 1):
+                    to = triplet_opinion[idx][idy]
+                    temp_opinion.append(' '.join(text[to[0]: to[-1] + 1]) + ' /')
+                to = triplet_opinion[idx][-1]
+                temp_opinion.append(' '.join(text[to[0]: to[-1] + 1]))
 
-                for idx in range(len(triplet_aspect)):
-                    ta = triplet_aspect[idx]
-                    #TODO: Opinion query
-                    query = f"What opinion given the aspect {' '.join(text[ta[0]: ta[-1] + 1])} ?".split()
-                    forward_query_list.append(query)
-                    start = [0]*len(text)
-                    end = [0]*len(text)
-                    for to in triplet_opinion[idx]:
-                        start[to[0]] = 1
-                        end[to[-1]] = 1
-                    forward_answer_list.append([start, end])
-                    #TODO: Sentiment query
-                    temp_opinion = []
-                    for idy in range(len(triplet_opinion[idx]) - 1):
-                        to = triplet_opinion[idx][idy]
-                        temp_opinion.append(' '.join(text[to[0]: to[-1] + 1]) + ' /')
-                    to = triplet_opinion[idx][-1]
-                    temp_opinion.append(' '.join(text[to[0]: to[-1] + 1]))
+                query = f"What sentiment given the aspect {' '.join(text[ta[0]: ta[-1] + 1])} and " \
+                        f"the opinion {' '.join(temp_opinion)} ?".split()
+                sentiment_query_list.append(query)
+                sentiment_answer_list.append(triplet_sentiment[idx])
 
-                    query = f"What sentiment given the aspect {' '.join(text[ta[0]: ta[-1] + 1])} and " \
-                            f"the opinion {' '.join(temp_opinion)} ?".split()
-                    sentiment_query_list.append(query)
-                    sentiment_answer_list.append(triplet_sentiment[idx])
-
-            if args.o2a:
+            if args.version.lower() in ['bi', 'bidirectional']:
                 backward_query_list.append("What is opinions ?".split())
                 start = [0]*len(text)
                 end = [0]*len(text)

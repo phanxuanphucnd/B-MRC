@@ -53,10 +53,6 @@ if __name__ == '__main__':
 
     parser.add_argument("--data_path", type=str, default='./data/14lap/pair',
                         help="Path to the dataset.")
-    parser.add_argument("--a2o", action='store_true',
-                        help='Setup mode forward Aspect to Opinions')
-    parser.add_argument("--o2a", action='store_true',
-                        help='Setup mode backward Opinion to Aspects')
     parser.add_argument('--output_path', type=str, default='./data/14lap/preprocess',
                         help='Path to the saved standard data.')
 

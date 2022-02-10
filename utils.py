@@ -64,20 +64,20 @@ def filter_unpaired(start_prob, end_prob, start, end):
     filtered_start = []
     filtered_end = []
     filtered_prob = []
-    if len(start)>0 and len(end)>0:
-        length = start[-1]+1 if start[-1]>=end[-1] else end[-1]+1
+    if len(start) > 0 and len(end) > 0:
+        length = start[-1] + 1 if start[-1] >= end[-1] else end[-1] + 1
         temp_seq = [0]*length
         for s in start:
-            temp_seq[s]+=1
+            temp_seq[s] += 1
         for e in end:
-            temp_seq[e]+=2
+            temp_seq[e] += 2
         last_start = -1
         for idx in range(len(temp_seq)):
-            assert temp_seq[idx]<4
+            assert temp_seq[idx] < 4
             if temp_seq[idx] == 1:
                 last_start = idx
             elif temp_seq[idx] == 2:
-                if last_start!=-1 and idx-last_start<5:
+                if last_start != -1 and idx-last_start < 5:
                     filtered_start.append(last_start)
                     filtered_end.append(idx)
                     prob = start_prob[start.index(last_start)] * end_prob[end.index(idx)]
@@ -89,4 +89,5 @@ def filter_unpaired(start_prob, end_prob, start, end):
                 prob = start_prob[start.index(idx)] * end_prob[end.index(idx)]
                 filtered_prob.append(prob)
                 last_start = -1
+
     return filtered_start, filtered_end, filtered_prob
