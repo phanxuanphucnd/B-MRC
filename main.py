@@ -50,7 +50,7 @@ def main(args, tokenizer):
         logger.info('Start testing...')
         test_dataset = BMRCDataset(train_data, dev_data, test_data, 'test', args.version)
         # load checkpoint
-        logger.info('Loading checkpoint...')
+        logger.info(f'Loading model path: `{args.save_model_path}`.')
         checkpoint = torch.load(args.save_model_path)
         model.load_state_dict(checkpoint['net'])
         model.eval()
@@ -606,7 +606,7 @@ if __name__ == '__main__':
     parser.add_argument('--learning_rate', type=float, default=1e-3)
     parser.add_argument('--tuning_bert_rate', type=float, default=1e-5)
     parser.add_argument('--warm_up', type=float, default=0.1)
-    parser.add_argument('--beta', type=float, default=1)
+    parser.add_argument('--beta', type=float, default=0.8)
 
     args = parser.parse_args()
 

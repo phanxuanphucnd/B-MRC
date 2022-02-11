@@ -8,7 +8,7 @@ MRC approach for Aspect-based Sentiment Analysis (ABSA)
 
 - Prepare data:
 ```commandline
-python data_process.py --data_path data/14lap --a2o --o2a
+python data_process.py --data_path data/14lap --version bidirectional (unidirectional)
 
 Arguments:
     --data_path :       Path to the dataset
@@ -18,7 +18,7 @@ Arguments:
 ```
 
 ```commandline
-python make_data_dual --data_path data/14lap/preprocess --a2o --o2a
+python make_data_dual --data_path data/14lap/preprocess --version bidirectional (unidirectional)
 
 Arguments:
     --data_path :       Path to the dataset
@@ -38,7 +38,7 @@ Arguments:
 - Training:
 ```commandline
 python main.py \
-    --version bidirectional \
+    --version bidirectional (unidirectional) \
     --data_path ./data/14lap/preprocess/ \
     --mode train \
     --model_type bert-base-uncased \
