@@ -5,6 +5,8 @@ MRC approach for Aspect-based Sentiment Analysis (ABSA)
 
 **Paper:** [Bidirectional Machine Reading Comprehension for Aspect Sentiment Triplet Extraction](https://arxiv.org/abs/2103.07665)
 
+**Dataset:** [https://github.com/xuuuluuu/SemEval-Triplet-data](https://github.com/xuuuluuu/SemEval-Triplet-data)
+
 ### Usage
 
 - Prepare data:
