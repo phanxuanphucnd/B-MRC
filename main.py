@@ -59,7 +59,7 @@ def main(args, tokenizer):
             dataset=test_dataset, batch_size=1, shuffle=False, ifgpu=args.ifgpu)
         # eval
         logger.info('Evaluating...')
-        f1 = test(args, model, tokenizer, batch_generator_test, test_standard, args.beta)
+        f1 = test(args, model, tokenizer, batch_generator_test, test_standard, args.inference_beta)
 
     elif args.mode == 'train':
         train_dataset = BMRCDataset(train_data, dev_data, test_data, 'train', args.version)
@@ -606,7 +606,7 @@ if __name__ == '__main__':
     parser.add_argument('--learning_rate', type=float, default=1e-3)
     parser.add_argument('--tuning_bert_rate', type=float, default=1e-5)
     parser.add_argument('--warm_up', type=float, default=0.1)
-    parser.add_argument('--beta', type=float, default=0.8)
+    parser.add_argument('--beta', type=float, default=1.0)
 
     args = parser.parse_args()
 
