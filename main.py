@@ -598,7 +598,6 @@ if __name__ == '__main__':
     parser.add_argument('--reload', type=bool, default=False)
     parser.add_argument('--checkpoint_path', type=str, default="./model/14lap/model_final.pt")
     parser.add_argument('--save_model_path', type=str, default="./models/model.pt")
-    parser.add_argument('--model_name', type=str, default="1")
 
     # model hyper-parameter
     parser.add_argument('--model_type', type=str, default="bert-base-uncased")
