@@ -103,6 +103,7 @@ def main(args, tokenizer):
         # training
         logger.info('Begin training...')
         best_dev_f1 = 0.
+        best_test_f1 = 0.
         for epoch in tqdm(range(start_epoch, args.epoch_num + 1)):
             model.train()
             model.zero_grad()
@@ -143,8 +144,6 @@ def main(args, tokenizer):
                         batch_dict['backward_opi_answer_start'],
                         batch_dict['backward_opi_answer_end'])
                     # q2_b
-                    print("1 : ", batch_dict['backward_asp_query'].size())
-                    print("2 : ", batch_dict['backward_asp_query'].view(-1, batch_dict['backward_asp_query'].size(-1)))
                     b_asp_start_scores, b_asp_end_scores = model(
                         batch_dict['backward_asp_query'].view(-1, batch_dict['backward_asp_query'].size(-1)),
                         batch_dict['backward_asp_query_mask'].view(-1, batch_dict['backward_asp_query_mask'].size(-1)),
@@ -202,6 +201,16 @@ def main(args, tokenizer):
                 dataset=test_dataset, batch_size=1, shuffle=False, ifgpu=args.ifgpu)
             logger.info(f"Evaluate Test...")
             f1 = test(args, model, tokenizer, batch_generator_test, test_standard, args.inference_beta)
+            # save model and optimizer
+            if f1 > best_test_f1:
+                best_test_f1 = f1
+                logger.info('Saved best test model')
+                state = {'net': model.state_dict(), 'optimizer': optimizer.state_dict(), 'epoch': epoch}
+
+                model_dir = '/'.join(args.save_model_path.split('/')[: -1])
+                if not os.path.exists(model_dir):
+                    os.makedirs(model_dir)
+                torch.save(state, os.path.join(model_dir, 'best_model.pt'))
 
     else:
         logger.error('Error mode!')
@@ -548,33 +557,33 @@ def test(args, model, tokenizer, batch_generator, standard, beta):
                 if trip_ == trip:
                     asp_pol_match_num += 1
 
-    precision = float(triplet_match_num) / float(triplet_predict_num+1e-6)
-    recall = float(triplet_match_num) / float(triplet_target_num+1e-6)
+    precision = float(triplet_match_num) / float(triplet_predict_num + 1e-6)
+    recall = float(triplet_match_num) / float(triplet_target_num + 1e-6)
     f1 = 2 * precision * recall / (precision + recall + 1e-6)
     logger.info('Triplet - Precision: {} ; Recall: {} ; F1: {}'.format(precision, recall, f1))
 
 
-    precision_aspect = float(asp_match_num) / float(asp_predict_num+1e-6)
-    recall_aspect = float(asp_match_num) / float(asp_target_num+1e-6)
-    f1_aspect = 2 * precision_aspect * recall_aspect / (precision_aspect + recall_aspect+1e-6)
+    precision_aspect = float(asp_match_num) / float(asp_predict_num + 1e-6)
+    recall_aspect = float(asp_match_num) / float(asp_target_num + 1e-6)
+    f1_aspect = 2 * precision_aspect * recall_aspect / (precision_aspect + recall_aspect + 1e-6)
     logger.info('Aspect - Precision: {} ; Recall: {} ; F1: {}'.format(precision_aspect, recall_aspect, f1_aspect))
 
-    precision_opinion = float(opi_match_num) / float(opi_predict_num+1e-6)
-    recall_opinion = float(opi_match_num) / float(opi_target_num+1e-6)
-    f1_opinion = 2 * precision_opinion * recall_opinion / (precision_opinion + recall_opinion+1e-6)
+    precision_opinion = float(opi_match_num) / float(opi_predict_num + 1e-6)
+    recall_opinion = float(opi_match_num) / float(opi_target_num + 1e-6)
+    f1_opinion = 2 * precision_opinion * recall_opinion / (precision_opinion + recall_opinion + 1e-6)
     logger.info('Opinion - Precision: {} ; Recall: {} ; F1: {}'.format(precision_opinion, recall_opinion, f1_opinion))
 
-    precision_aspect_sentiment = float(asp_pol_match_num) / float(asp_pol_predict_num+1e-6)
-    recall_aspect_sentiment = float(asp_pol_match_num) / float(asp_pol_target_num+1e-6)
+    precision_aspect_sentiment = float(asp_pol_match_num) / float(asp_pol_predict_num + 1e-6)
+    recall_aspect_sentiment = float(asp_pol_match_num) / float(asp_pol_target_num + 1e-6)
     f1_aspect_sentiment = 2 * precision_aspect_sentiment * recall_aspect_sentiment / (
-            precision_aspect_sentiment + recall_aspect_sentiment+1e-6)
+            precision_aspect_sentiment + recall_aspect_sentiment + 1e-6)
     logger.info('Aspect-Sentiment - Precision: {} ; Recall: {} ; F1: {}'.format(
         precision_aspect_sentiment, recall_aspect_sentiment, f1_aspect_sentiment))
 
-    precision_aspect_opinion = float(asp_opi_match_num) / float(asp_opi_predict_num+1e-6)
-    recall_aspect_opinion = float(asp_opi_match_num) / float(asp_opi_target_num+1e-6)
+    precision_aspect_opinion = float(asp_opi_match_num) / float(asp_opi_predict_num + 1e-6)
+    recall_aspect_opinion = float(asp_opi_match_num) / float(asp_opi_target_num + 1e-6)
     f1_aspect_opinion = 2 * precision_aspect_opinion * recall_aspect_opinion / (
-            precision_aspect_opinion + recall_aspect_opinion+1e-6)
+            precision_aspect_opinion + recall_aspect_opinion + 1e-6)
     logger.info('Aspect-Opinion - Precision: {} ; Recall: {} ; F1: {}'.format(
         precision_aspect_opinion, recall_aspect_opinion, f1_aspect_opinion))
 

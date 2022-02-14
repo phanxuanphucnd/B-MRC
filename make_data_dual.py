@@ -3,6 +3,7 @@
 import os
 import torch
 import argparse
+import numpy as np
 from tqdm import tqdm
 from transformers import  BertTokenizer
 from dataset import DualSample, TokenizedSample, OriginalDataset
@@ -32,8 +33,11 @@ def tokenize_data(data, version='bidirectional', mode='train'):
         backward_queries_seg = []
         sentiment_queries_seg = []
 
-        if int(len(sample.forward_queries) - 1) > max_aspect_num:
-            max_aspect_num = int(len(sample.forward_queries) - 1)
+        # if int(len(sample.forward_queries) - 1) > max_aspect_num:
+        #     max_aspect_num = int(len(sample.forward_queries) - 1)
+
+        if int(len(sample.sentiment_queries)) > max_aspect_num:
+            max_aspect_num = int(len(sample.sentiment_queries))
 
         for idx in range(len(sample.forward_queries)):
             temp_query = sample.forward_queries[idx]
@@ -98,6 +102,13 @@ def tokenize_data(data, version='bidirectional', mode='train'):
             sentiment_queries.append(temp_query_to)
             sentiment_answers.append(temp_answer)
             sentiment_queries_seg.append(temp_query_seg)
+
+        # print(f"forward_queries: {np.shape(forward_queries)} {type(forward_queries)} | {forward_queries}")
+        # print(f"forward_answers: {np.shape(forward_answers)}")
+        # print(f"sentiment_queries: {np.shape(sentiment_queries)} | {sentiment_queries}")
+        # print(f"sentiment_answers: {np.shape(sentiment_answers)} | {sentiment_answers}")
+        # print(f"forward_queries_seg: {np.shape(forward_queries_seg)} | {forward_queries_seg}")
+        # print(f"sentiment_queries_seg: {np.shape(sentiment_queries_seg)}")
 
         temp_sample = TokenizedSample(sample.original_sample, forward_queries, forward_answers, backward_queries,
                                        backward_answers, sentiment_queries, sentiment_answers, forward_queries_seg,
@@ -401,6 +412,10 @@ if __name__ == '__main__':
     train_tokenized, train_max_len = tokenize_data(train_data, version=args.version, mode='train')
     dev_tokenized, dev_max_len = tokenize_data(dev_data, version=args.version, mode='dev')
     test_tokenized, test_max_len = tokenize_data(test_data, version=args.version, mode='test')
+
+    print(f"train_max_len : {train_max_len}")
+    print(f"dev_max_len : {dev_max_len}")
+    print(f"test_max_len : {test_max_len}")
 
     train_preprocess = preprocessing(train_tokenized, train_max_len, version=args.version, mode='train')
     dev_preprocess = preprocessing(dev_tokenized, dev_max_len, version=args.version, mode='dev')
