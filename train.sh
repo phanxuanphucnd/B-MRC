@@ -26,5 +26,5 @@ python make_data_standard.py \
 python main.py \
   --data_path $PREPROCESS_DATA_PATH \
   --version $VERSION \
-  --epoch_num 30 \
+  --epoch_num 40 \
   --mode train
