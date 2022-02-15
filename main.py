@@ -51,15 +51,17 @@ def main(args, tokenizer):
         test_dataset = BMRCDataset(train_data, dev_data, test_data, 'test', args.version)
         # load checkpoint
         logger.info(f'Loading model path: `{args.save_model_path}`.')
-        checkpoint = torch.load(args.save_model_path)
-        model.load_state_dict(checkpoint['net'])
-        model.eval()
+        for file in os.listdir(args.save_model_path):
+            file_path = os.path.join(args.save_model_path, file)
+            checkpoint = torch.load(file_path)
+            model.load_state_dict(checkpoint['net'])
+            model.eval()
 
-        batch_generator_test = generate_fi_batches(
-            dataset=test_dataset, batch_size=1, shuffle=False, ifgpu=args.ifgpu)
-        # eval
-        logger.info('Evaluating...')
-        f1 = test(args, model, tokenizer, batch_generator_test, test_standard, args.inference_beta)
+            batch_generator_test = generate_fi_batches(
+                dataset=test_dataset, batch_size=1, shuffle=False, ifgpu=args.ifgpu)
+            # eval
+            logger.info(f'>>> Evaluating from model path: `{file_path}`')
+            f1 = test(args, model, tokenizer, batch_generator_test, test_standard, args.inference_beta)
 
     elif args.mode == 'train':
         train_dataset = BMRCDataset(train_data, dev_data, test_data, 'train', args.version)
@@ -191,10 +193,9 @@ def main(args, tokenizer):
                 logger.info('Model saved after epoch {}'.format(epoch))
                 state = {'net': model.state_dict(), 'optimizer': optimizer.state_dict(), 'epoch': epoch}
 
-                model_dir = '/'.join(args.save_model_path.split('/')[: -1])
-                if not os.path.exists(model_dir):
-                    os.makedirs(model_dir)
-                torch.save(state, args.save_model_path)
+                if not os.path.exists(args.save_model_path):
+                    os.makedirs(args.save_model_path)
+                torch.save(state, os.path.join(args.save_model_path, 'best_dev_model.pt'))
 
             # test
             batch_generator_test = generate_fi_batches(
@@ -207,10 +208,7 @@ def main(args, tokenizer):
                 logger.info('Saved best test model')
                 state = {'net': model.state_dict(), 'optimizer': optimizer.state_dict(), 'epoch': epoch}
 
-                model_dir = '/'.join(args.save_model_path.split('/')[: -1])
-                if not os.path.exists(model_dir):
-                    os.makedirs(model_dir)
-                torch.save(state, os.path.join(model_dir, 'best_model.pt'))
+                torch.save(state, os.path.join(args.save_model_path, 'best_test_model.pt'))
 
     else:
         logger.error('Error mode!')
@@ -597,7 +595,7 @@ if __name__ == '__main__':
     parser.add_argument('--mode', type=str, default="train", choices=["train", "test"])
     parser.add_argument('--reload', type=bool, default=False)
     parser.add_argument('--checkpoint_path', type=str, default="./model/14lap/model_final.pt")
-    parser.add_argument('--save_model_path', type=str, default="./models/model.pt")
+    parser.add_argument('--save_model_path', type=str, default="./models/14lap")
 
     # model hyper-parameter
     parser.add_argument('--model_type', type=str, default="bert-base-uncased")
