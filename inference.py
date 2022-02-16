@@ -323,11 +323,6 @@ def convert_ids_to_text(ids, text):
     return ' '.join(text.split()[ids[0]: ids[1] + 1])
 
 
-def infers(file_input: str=None):
-
-    return
-
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
