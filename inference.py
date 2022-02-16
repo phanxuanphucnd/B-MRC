@@ -320,7 +320,7 @@ def infer(input: str=None, tokenizer: Any=None, model: Any=None, version: str=No
 
 
 def convert_ids_to_text(ids, text):
-    return ' '.join(text.split()[ids[0]: ids[1]])
+    return ' '.join(text.split()[ids[0]: ids[1] + 1])
 
 
 def infers(file_input: str=None):
