@@ -51,9 +51,9 @@ def make_standard(data_path, dataset_type):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--data_path", type=str, default='./data/14lap/pair',
+    parser.add_argument("--data_path", type=str, default='./data/14rest/pair',
                         help="Path to the dataset.")
-    parser.add_argument('--output_path', type=str, default='./data/14lap/preprocess',
+    parser.add_argument('--output_path', type=str, default='./data/14rest/preprocess',
                         help='Path to the saved standard data.')
 
     args = parser.parse_args()

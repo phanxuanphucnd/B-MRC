@@ -430,7 +430,9 @@ def test(args, model, tokenizer, batch_generator, standard, beta):
                         logger.error('error')
                         exit(1)
 
-        # print(f"backward_pair_list = {backward_pair_list}")
+        # print(f"\nbackward_pair_list: {backward_pair_list}")
+        # print(f"backward_pair_prob: {backward_pair_prob}")
+        # print(f"backward_pair_ind_list: {backward_pair_ind_list}")
 
         # filter triplet
         # forward
