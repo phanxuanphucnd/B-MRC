@@ -1,7 +1,7 @@
 # B-MRC
 MRC approach for Aspect-based Sentiment Analysis (ABSA)
 
-<img src="docs/imgs/bmrc.png" width="35%" height="35%" align="center" />
+<img src="docs/imgs/bmrc.png" width="45%" height="45%" align="center" />
 
 **Paper:** [Bidirectional Machine Reading Comprehension for Aspect Sentiment Triplet Extraction](https://arxiv.org/abs/2103.07665)
 
