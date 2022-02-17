@@ -52,7 +52,10 @@ python main.py \
 
 - Inference:
 ```commandline
-python inference --input TEXT --model_file_path PATH_TO_MODEL --version bidirectional/ unidirectional
+python inference \
+    --input TEXT \
+    --model_file_path PATH_TO_MODEL \
+    --version bidirectional/ unidirectional
 ```
 
 
