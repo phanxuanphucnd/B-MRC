@@ -49,3 +49,22 @@ python main.py \
     --batch_size 4 \
     --learning_rate 1e-3
 ```
+
+- Inference:
+```commandline
+python inference --input TEXT --model_file_path PATH_TO_MODEL --version bidirectional/ unidirectional
+```
+
+
+- Using from bash:
+
+```commandline
+Training:
+>>> bash train.sh
+
+Test:
+>>> bash test.sh
+
+Inference:
+>>> bash infer.sh
+```
