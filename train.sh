@@ -1,8 +1,8 @@
-export VERSION=uni
-export DATA_PATH=data/14rest
-export PREPROCESS_DATA_PATH=data/14rest/preprocess
-export PAIR_DATA_PATH=data/14rest/pair
-export SAVE_MODEL_PATH=models/14rest
+export VERSION=bidirectional
+export DATA_PATH=data/14lap
+export PREPROCESS_DATA_PATH=data/14lap/preprocess
+export PAIR_DATA_PATH=data/14lap/pair
+export SAVE_MODEL_PATH=models/14lap
 
 #TODO: Data_process
 python data_process.py \
@@ -26,6 +26,6 @@ python make_data_standard.py \
 python main.py \
   --data_path $PREPROCESS_DATA_PATH \
   --version $VERSION \
-  --epoch_num 40 \
+  --epoch_num 50 \
   --mode train \
   --save_model_path $SAVE_MODEL_PATH

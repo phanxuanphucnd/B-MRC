@@ -1,6 +1,6 @@
 export VERSION=bidirectional
-export PREPROCESS_DATA_PATH=data/14rest/preprocess
-export SAVED_MODEL_PATH=models/14rest
+export PREPROCESS_DATA_PATH=data/14lap/preprocess
+export SAVED_MODEL_PATH=models/14lap
 
 #TODO: Training
 python main.py \
