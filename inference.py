@@ -55,9 +55,14 @@ def infer(input: str=None, tokenizer: Any=None, model: Any=None, version: str=No
     )
     forward_asp_query_mask = [1 for i in range(len(f_asp_query))]
 
-    forward_asp_query = torch.tensor(forward_asp_query).unsqueeze(0).long().cuda()
-    forward_asp_query_seg = torch.tensor(forward_asp_query_seg).unsqueeze(0).long().cuda()
-    forward_asp_query_mask = torch.tensor(forward_asp_query_mask).unsqueeze(0).float().cuda()
+    if torch.cuda.is_available():
+        forward_asp_query = torch.tensor(forward_asp_query).unsqueeze(0).long().cuda()
+        forward_asp_query_seg = torch.tensor(forward_asp_query_seg).unsqueeze(0).long().cuda()
+        forward_asp_query_mask = torch.tensor(forward_asp_query_mask).unsqueeze(0).float().cuda()
+    else:
+        forward_asp_query = torch.tensor(forward_asp_query).unsqueeze(0).long()
+        forward_asp_query_seg = torch.tensor(forward_asp_query_seg).unsqueeze(0).long()
+        forward_asp_query_mask = torch.tensor(forward_asp_query_mask).unsqueeze(0).float()
 
     f_asp_start_scores, f_asp_end_scores = model(
         forward_asp_query,
@@ -97,11 +102,19 @@ def infer(input: str=None, tokenizer: Any=None, model: Any=None, version: str=No
         opinion_query.append(tokenizer.convert_tokens_to_ids('[SEP]'))
         opinion_query_seg = [0] * len(opinion_query)
         f_opi_length = len(opinion_query)
-        opinion_query = torch.tensor(opinion_query).long().cuda()
-        opinion_query = torch.cat([opinion_query, forward_asp_query[0][5:]], -1).unsqueeze(0)
-        opinion_query_seg += [1]*forward_asp_query[0][5:].size(0)
-        opinion_query_mask = torch.ones(opinion_query.size(1)).float().cuda().unsqueeze(0)
-        opinion_query_seg = torch.tensor(opinion_query_seg).long().cuda().unsqueeze(0)
+
+        if torch.cuda.is_available():
+            opinion_query = torch.tensor(opinion_query).long().cuda()
+            opinion_query = torch.cat([opinion_query, forward_asp_query[0][5:]], -1).unsqueeze(0)
+            opinion_query_seg += [1]*forward_asp_query[0][5:].size(0)
+            opinion_query_mask = torch.ones(opinion_query.size(1)).float().cuda().unsqueeze(0)
+            opinion_query_seg = torch.tensor(opinion_query_seg).long().cuda().unsqueeze(0)
+        else:
+            opinion_query = torch.tensor(opinion_query).long()
+            opinion_query = torch.cat([opinion_query, forward_asp_query[0][5:]], -1).unsqueeze(0)
+            opinion_query_seg += [1] * forward_asp_query[0][5:].size(0)
+            opinion_query_mask = torch.ones(opinion_query.size(1)).float().unsqueeze(0)
+            opinion_query_seg = torch.tensor(opinion_query_seg).long().unsqueeze(0)
 
         f_opi_start_scores, f_opi_end_scores = model(opinion_query, opinion_query_mask, opinion_query_seg, 0)
 
@@ -148,9 +161,14 @@ def infer(input: str=None, tokenizer: Any=None, model: Any=None, version: str=No
         )
         backward_opi_query_mask = [1 for i in range(len(b_opi_query))]
 
-        backward_opi_query = torch.tensor(backward_opi_query).unsqueeze(0).long().cuda()
-        backward_opi_query_seg = torch.tensor(backward_opi_query_seg).unsqueeze(0).long().cuda()
-        backward_opi_query_mask = torch.tensor(backward_opi_query_mask).unsqueeze(0).float().cuda()
+        if torch.cuda.is_available():
+            backward_opi_query = torch.tensor(backward_opi_query).unsqueeze(0).long().cuda()
+            backward_opi_query_seg = torch.tensor(backward_opi_query_seg).unsqueeze(0).long().cuda()
+            backward_opi_query_mask = torch.tensor(backward_opi_query_mask).unsqueeze(0).float().cuda()
+        else:
+            backward_opi_query = torch.tensor(backward_opi_query).unsqueeze(0).long()
+            backward_opi_query_seg = torch.tensor(backward_opi_query_seg).unsqueeze(0).long()
+            backward_opi_query_mask = torch.tensor(backward_opi_query_mask).unsqueeze(0).float()
 
         b_opi_start_scores, b_opi_end_scores = model(
             backward_opi_query,
@@ -189,11 +207,19 @@ def infer(input: str=None, tokenizer: Any=None, model: Any=None, version: str=No
             aspect_query.append(tokenizer.convert_tokens_to_ids('[SEP]'))
             aspect_query_seg = [0] * len(aspect_query)
             b_asp_length = len(aspect_query)
-            aspect_query = torch.tensor(aspect_query).long().cuda()
-            aspect_query = torch.cat([aspect_query, backward_opi_query[0][5:]], -1).unsqueeze(0)
-            aspect_query_seg += [1] * backward_opi_query[0][5:].size(0)
-            aspect_query_mask = torch.ones(aspect_query.size(1)).float().cuda().unsqueeze(0)
-            aspect_query_seg = torch.tensor(aspect_query_seg).long().cuda().unsqueeze(0)
+
+            if torch.cuda.is_available():
+                aspect_query = torch.tensor(aspect_query).long().cuda()
+                aspect_query = torch.cat([aspect_query, backward_opi_query[0][5:]], -1).unsqueeze(0)
+                aspect_query_seg += [1] * backward_opi_query[0][5:].size(0)
+                aspect_query_mask = torch.ones(aspect_query.size(1)).float().cuda().unsqueeze(0)
+                aspect_query_seg = torch.tensor(aspect_query_seg).long().cuda().unsqueeze(0)
+            else:
+                aspect_query = torch.tensor(aspect_query).long()
+                aspect_query = torch.cat([aspect_query, backward_opi_query[0][5:]], -1).unsqueeze(0)
+                aspect_query_seg += [1] * backward_opi_query[0][5:].size(0)
+                aspect_query_mask = torch.ones(aspect_query.size(1)).float().unsqueeze(0)
+                aspect_query_seg = torch.tensor(aspect_query_seg).long().unsqueeze(0)
 
             b_asp_start_scores, b_asp_end_scores = model(aspect_query, aspect_query_mask, aspect_query_seg, 0)
 
@@ -296,11 +322,19 @@ def infer(input: str=None, tokenizer: Any=None, model: Any=None, version: str=No
         sentiment_query.append(tokenizer.convert_tokens_to_ids('[SEP]'))
 
         sentiment_query_seg = [0] * len(sentiment_query)
-        sentiment_query = torch.tensor(sentiment_query).long().cuda()
-        sentiment_query = torch.cat([sentiment_query, forward_asp_query[0][5:]], -1).unsqueeze(0)
-        sentiment_query_seg += [1] * forward_asp_query[0][5:].size(0)
-        sentiment_query_mask = torch.ones(sentiment_query.size(1)).float().cuda().unsqueeze(0)
-        sentiment_query_seg = torch.tensor(sentiment_query_seg).long().cuda().unsqueeze(0)
+
+        if torch.cuda.is_available():
+            sentiment_query = torch.tensor(sentiment_query).long().cuda()
+            sentiment_query = torch.cat([sentiment_query, forward_asp_query[0][5:]], -1).unsqueeze(0)
+            sentiment_query_seg += [1] * forward_asp_query[0][5:].size(0)
+            sentiment_query_mask = torch.ones(sentiment_query.size(1)).float().cuda().unsqueeze(0)
+            sentiment_query_seg = torch.tensor(sentiment_query_seg).long().cuda().unsqueeze(0)
+        else:
+            sentiment_query = torch.tensor(sentiment_query).long()
+            sentiment_query = torch.cat([sentiment_query, forward_asp_query[0][5:]], -1).unsqueeze(0)
+            sentiment_query_seg += [1] * forward_asp_query[0][5:].size(0)
+            sentiment_query_mask = torch.ones(sentiment_query.size(1)).float().unsqueeze(0)
+            sentiment_query_seg = torch.tensor(sentiment_query_seg).long().unsqueeze(0)
 
         sentiment_scores = model(sentiment_query, sentiment_query_mask, sentiment_query_seg, 1)
         sentiment_predicted = torch.argmax(sentiment_scores[0], dim=0).item()
@@ -341,12 +375,21 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
+    print(f"CUDA: {torch.cuda.is_available()}")
+
     tokenizer = BertTokenizer.from_pretrained(args.model_type)
     model = BMRCBertModel(args)
-    print(f'Loading model path: `{args.model_file_path}`.')
-    checkpoint = torch.load(args.model_file_path)
-    model.load_state_dict(checkpoint['net'])
-    model = model.cuda()
+
+    if torch.cuda.is_available():
+        print(f'Loading model path: `{args.model_file_path}`.')
+        checkpoint = torch.load(args.model_file_path)
+        model.load_state_dict(checkpoint['net'])
+        model = model.cuda()
+    else:
+        device = torch.device('cpu')
+        print(f'Loading model path: `{args.model_file_path}`.')
+        checkpoint = torch.load(args.model_file_path, map_location=device)
+        model.load_state_dict(checkpoint['net'])
 
     args.input = "Owner is pleasant and entertaining ."
 
