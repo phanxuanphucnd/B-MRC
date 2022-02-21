@@ -1,7 +1,6 @@
 export VERSION=bidirectional
 export DATA_PATH=data/14lap
 export PREPROCESS_DATA_PATH=data/14lap/preprocess
-export PAIR_DATA_PATH=data/14lap/pair
 export SAVE_MODEL_PATH=models/14lap
 
 #TODO: Data_process
@@ -19,7 +18,7 @@ python make_data_dual.py \
 
 #TODO: Make_data_standard
 python make_data_standard.py \
-  --data_path $PAIR_DATA_PATH \
+  --data_path $DATA_PATH \
   --output_path $PREPROCESS_DATA_PATH
 
 #TODO: Training

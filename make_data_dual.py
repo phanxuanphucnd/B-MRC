@@ -1,4 +1,5 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
+# Copyright (c) 2022 by Phuc Phan
 
 import os
 import torch
@@ -391,9 +392,9 @@ def preprocessing(sample_list, max_len, version='bidirectional', mode='train'):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--data_path', type=str, default='./data/14lap/preprocess',
+    parser.add_argument('--data_path', type=str, default='./data/14rest/preprocess',
                         help='Path to the processed data from `data_process.py`')
-    parser.add_argument('--output_path', type=str, default='./data/14lap/preprocess',
+    parser.add_argument('--output_path', type=str, default='./data/14rest/preprocess',
                         help='Path to the saved data.')
     parser.add_argument("--version", type=str, default='bidirectional',
                         choices=['uni', 'bi', 'unidirectional', 'bidirectional'],

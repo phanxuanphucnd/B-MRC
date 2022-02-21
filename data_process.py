@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# Copyright (c) 2022 by Phuc Phan
 
 import os
 import torch
@@ -9,30 +10,33 @@ from dataset import DualSample
 
 def get_text(lines):
     text_list = []
-    aspect_list = []
-    opinion_list = []
+    # aspect_list = []
+    # opinion_list = []
     for line in lines:
-        temp = line.split('####')
-        assert len(temp) == 3
+        # temp = line.split('####')
+        # assert len(temp) == 3
 
-        word_list = temp[0].split()
-        aspect_label_list = [t.split('=')[-1] for t in temp[1].split()]
-        opinion_label_list = [t.split('=')[-1] for t in temp[2].split()]
-        assert len(word_list) == len(aspect_label_list) == len(opinion_label_list)
+        word_list = line.split()
+        # aspect_label_list = [t.split('=')[-1] for t in temp[1].split()]
+        # opinion_label_list = [t.split('=')[-1] for t in temp[2].split()]
+        # assert len(word_list) == len(aspect_label_list) == len(opinion_label_list)
 
         text_list.append(word_list)
-        aspect_list.append(aspect_label_list)
-        opinion_list.append(opinion_label_list)
+        # aspect_list.append(aspect_label_list)
+        # opinion_list.append(opinion_label_list)
 
-    return text_list, aspect_list, opinion_list
+    # return text_list, aspect_list, opinion_list
+    return text_list
 
 
 def valid_data(triplet, aspect, opinion):
     for t in triplet[0][0]:
-        assert aspect[t] != ['O']
+        string = f"{triplet} / {aspect} / {opinion}"
+        print(string)
+        assert aspect[t] != ['O'], string
 
     for t in triplet[0][1]:
-        assert opinion[t] != ['O']
+        assert opinion[t] != ['O'], f"{triplet} / {aspect} / {opinion}"
 
 
 def fusion_dual_triplet(triplet, backward=False):
@@ -80,7 +84,7 @@ if __name__ == '__main__':
 
     for dataset_type in DATASET_TYPE_LIST:
         #TODO: Read triple
-        with open(f'{args.data_path}/pair/{dataset_type}_pair.pkl', 'rb') as f:
+        with open(f'{args.data_path}/{dataset_type}_pair.pkl', 'rb') as f:
             triple_data = pickle.load(f)
 
         #TODO: Read text
@@ -88,7 +92,8 @@ if __name__ == '__main__':
             text_lines = f.readlines()
 
         #TODO: Get text
-        text_list, aspect_list, opinion_list = get_text(text_lines)
+        text_list = get_text(text_lines)
+        # text_list, aspect_list, opinion_list = get_text(text_lines)
 
         sample_list = []
         header_fmt = 'Processing {:>5s}'
@@ -96,7 +101,7 @@ if __name__ == '__main__':
             triplet = triple_data[i]
             text = text_list[i]
             #TODO: Valid data
-            valid_data(triplet, aspect_list[i], opinion_list[i])
+            # valid_data(triplet, aspect_list[i], opinion_list[i])
             triplet_aspect, triplet_opinion, triplet_sentiment, dual_opinion, dual_aspect = fusion_dual_triplet(
                 triplet,
                 backward=args.version.lower() in ['bi', 'bidirectional']
@@ -177,6 +182,7 @@ if __name__ == '__main__':
         #TODO: Storages samples to .pt file
         if not os.path.exists(args.output_path):
             os.makedirs(args.output_path)
+
         output_path = f"{args.output_path}/{dataset_type}_DUAL.pt"
         print(f"Saved data to `{output_path}`.")
         torch.save(sample_list, output_path)
