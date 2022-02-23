@@ -31,12 +31,10 @@ def get_text(lines):
 
 def valid_data(triplet, aspect, opinion):
     for t in triplet[0][0]:
-        string = f"{triplet} / {aspect} / {opinion}"
-        print(string)
-        assert aspect[t] != ['O'], string
+        assert aspect[t] != ['O']
 
     for t in triplet[0][1]:
-        assert opinion[t] != ['O'], f"{triplet} / {aspect} / {opinion}"
+        assert opinion[t] != ['O']
 
 
 def fusion_dual_triplet(triplet, backward=False):
