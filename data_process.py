@@ -183,6 +183,6 @@ if __name__ == '__main__':
         if not os.path.exists(args.output_path):
             os.makedirs(args.output_path)
 
-        output_path = f"{args.output_path}/{dataset_type}_DUAL.pt"
+        output_path = f"{args.output_path}/{dataset_type}_dual.pt"
         print(f"Saved data to `{output_path}`.")
         torch.save(sample_list, output_path)

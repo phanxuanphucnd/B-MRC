@@ -402,9 +402,9 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    train_data_path = f"{args.data_path}/train_DUAL.pt"
-    dev_data_path = f"{args.data_path}/dev_DUAL.pt"
-    test_data_path = f"{args.data_path}/test_DUAL.pt"
+    train_data_path = f"{args.data_path}/train_dual.pt"
+    dev_data_path = f"{args.data_path}/dev_dual.pt"
+    test_data_path = f"{args.data_path}/test_dual.pt"
 
     train_data = torch.load(train_data_path)
     dev_data = torch.load(dev_data_path)
