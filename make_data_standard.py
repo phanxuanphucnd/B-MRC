@@ -65,7 +65,7 @@ if __name__ == '__main__':
         os.makedirs(args.output_path)
     output_path = f"{args.output_path}/data_standard.pt"
 
-    print(f"Saved data : `{output_path}`.")
+    print(f"📥 Saved data : `{output_path}`.\n")
     torch.save({
         'dev': dev_standard,
         'test': test_standard

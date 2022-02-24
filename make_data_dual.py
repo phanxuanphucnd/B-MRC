@@ -426,7 +426,7 @@ if __name__ == '__main__':
         os.makedirs(args.output_path)
 
     output_path = f"{args.output_path}/data.pt"
-    print(f"Saved data : `{output_path}`.")
+    print(f"📥 Saved data : `{output_path}`. \n")
     torch.save({
         'train': train_preprocess,
         'dev': dev_preprocess,
